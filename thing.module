@@ -1,0 +1,49 @@
+<?php
+
+function thing_menu() {
+  $items = array();
+  $items['api/thing'] = array(
+    'page callback' => 'thing_endpoint',
+    'type' => MENU_CALLBACK,
+    'access callback' => TRUE
+  );
+  return $items;
+}
+
+function thing_endpoint() {
+  // @todo define and check permission of save_thing_data
+  $uid = user_authenticate($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW']);
+  if ($uid !== false) {
+    $data = json_decode(file_get_contents("php://input"), true);
+    $query = <<<EOF
+      SELECT node.created AS node_created, node.nid AS nid
+      FROM 
+      {node} node
+      LEFT JOIN {field_data_field_thing_id} field_data_field_thing_id ON node.nid = field_data_field_thing_id.entity_id AND (field_data_field_thing_id.entity_type = 'node' AND field_data_field_thing_id.deleted = '0')
+      WHERE (( (node.status = '1') AND (node.type IN  ('thing')) AND (field_data_field_thing_id.field_thing_id_value LIKE '%s' ESCAPE '\') ))
+    EOF>>>;
+    $results = drupal_query($query, array($data['id']));
+    if (count($results > 0) {
+      // record the data
+      $data = JSON_PARSE($packet['data']);
+      thing_packet_save($packet['id'], $data);
+    }
+    else {
+      // create the thing and its table
+      drupal_query('create table thing_' . $packet['id']);
+      node_create('thing', array('thing_id' => $packet['id'], 'title' => $packet['id']);
+    }
+  }
+}
+
+function thing_save_packet($id, $data) {
+  $query_data = '';
+  foreach($data as $key => $value) {
+    $query_data .= "$key=\"%s\" ";
+  }
+  drupal_query('insert thing_' . $id . ' set ' . $query_data, $data);
+}
+
+
+
+
