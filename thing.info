@@ -1,0 +1,5 @@
+name = Thing 
+description = Provides an API for Things 
+core = 7.x
+version = VERSION
+
