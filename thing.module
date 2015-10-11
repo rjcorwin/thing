@@ -15,23 +15,53 @@ function thing_endpoint() {
   $uid = user_authenticate($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW']);
   if ($uid !== false) {
     $data = json_decode(file_get_contents("php://input"), true);
-    $query = <<<EOF
+    $query = " 
       SELECT node.created AS node_created, node.nid AS nid
       FROM 
       {node} node
       LEFT JOIN {field_data_field_thing_id} field_data_field_thing_id ON node.nid = field_data_field_thing_id.entity_id AND (field_data_field_thing_id.entity_type = 'node' AND field_data_field_thing_id.deleted = '0')
-      WHERE (( (node.status = '1') AND (node.type IN  ('thing')) AND (field_data_field_thing_id.field_thing_id_value LIKE '%s' ESCAPE '\') ))
-    EOF>>>;
-    $results = drupal_query($query, array($data['id']));
-    if (count($results > 0) {
+      WHERE (( (node.status = '1') AND (node.type IN  ('thing')) AND (field_data_field_thing_id.field_thing_id_value='" . $data['id'] . "') ))
+    ";
+    //$results = db_query($query, array("id" => $data['id']));
+    $results = db_query($query);
+    $arr = array();
+    foreach ($results as $results) {
+      array_push($arr, $results);
+    }
+    var_dump($arr);
+    if (count($arr) > 0) {
       // record the data
-      $data = JSON_PARSE($packet['data']);
-      thing_packet_save($packet['id'], $data);
+      $data = JSON_PARSE($data['data']);
+      thing_packet_save($data['id'], $data);
     }
     else {
       // create the thing and its table
-      drupal_query('create table thing_' . $packet['id']);
-      node_create('thing', array('thing_id' => $packet['id'], 'title' => $packet['id']);
+      var_dump($data);
+      //die();
+      $id = $data['id'];
+      unset($data['id']);
+      $schema = array(
+        'fields' => array(
+          'id' => array('type' => 'int', 'auto_increment' => TRUE, 'not null' => TRUE, 'primary key' => true)
+        )
+      );
+      foreach($data as $key => $value) {
+        $schema['fields'][$key] = array('type' => 'varchar', 'length' => 256);
+      } 
+      db_create_table('thing_' . $id, $schema);
+        
+      $node = new stdClass();
+      $node->type = 'thing';
+      $node->title = $id;
+      node_object_prepare($node);
+      $node->language = LANGUAGE_NONE;
+      $node->uid = $uid;
+      $node->status = 1;
+      $node->promote = 0; //(1 or 0): promoted to front page
+      $node->comment = 1; // 0 = comments disabled, 1 = read only, 2 = read/write
+      $node->field_thing_id[$node->language][]['value'] = $id;
+      $node = node_submit($node); // Prepare node for saving
+      node_save($node);
     }
   }
 }
