@@ -28,16 +28,14 @@ function thing_endpoint() {
     foreach ($results as $results) {
       array_push($arr, $results);
     }
-    var_dump($arr);
     if (count($arr) > 0) {
       // record the data
-      $data = JSON_PARSE($data['data']);
-      thing_packet_save($data['id'], $data);
+      $id = $data['id'];
+      unset($data['id']);
+      thing_save_packet($id, $data);
     }
     else {
       // create the thing and its table
-      var_dump($data);
-      //die();
       $id = $data['id'];
       unset($data['id']);
       $schema = array(
@@ -67,11 +65,7 @@ function thing_endpoint() {
 }
 
 function thing_save_packet($id, $data) {
-  $query_data = '';
-  foreach($data as $key => $value) {
-    $query_data .= "$key=\"%s\" ";
-  }
-  drupal_query('insert thing_' . $id . ' set ' . $query_data, $data);
+  db_insert('thing_' . $id)->fields($data)->execute();
 }
 
 
