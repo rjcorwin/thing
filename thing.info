@@ -1,5 +1,12 @@
-name = Thing 
-description = Provides an API for Things 
+name = Thing
 core = 7.x
-version = VERSION
-
+package = Features
+version = 7.x-0.1
+dependencies[] = features
+dependencies[] = text
+features[features_api][] = api:2
+features[field_base][] = body
+features[field_base][] = field_thing_id
+features[field_instance][] = node-thing-body
+features[field_instance][] = node-thing-field_thing_id
+features[node][] = thing
