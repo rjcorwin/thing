@@ -1,4 +1,10 @@
 <?php
+/**
+ * @file
+ * Code for the Thing feature.
+ */
+
+include_once 'thing.features.inc';
 
 function thing_menu() {
   $items = array();
@@ -40,8 +46,9 @@ function thing_endpoint() {
       unset($data['id']);
       $schema = array(
         'fields' => array(
-          'id' => array('type' => 'int', 'auto_increment' => TRUE, 'not null' => TRUE, 'primary key' => true)
-        )
+          'id' => array('type' => 'serial', 'unsigned' => TRUE, 'not null' => TRUE)
+        ),
+        'primary key' => array('id')
       );
       foreach($data as $key => $value) {
         $schema['fields'][$key] = array('type' => 'varchar', 'length' => 256);
