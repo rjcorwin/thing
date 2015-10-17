@@ -53,8 +53,15 @@ function thing_endpoint() {
       foreach($data as $key => $value) {
         $schema['fields'][$key] = array('type' => 'varchar', 'length' => 256);
       } 
-      db_create_table('thing_' . $id, $schema);
+      $table_name = 'thing_' . $id;
+      db_create_table($table_name, $schema);
+      module_load_include('inc', 'data', 'includes/DataTable');
+      $table = DataTable::instance($table_name);
+      $table->adopt();
+      unset($table);
+      DataTable::clearCaches();
         
+      // Create the Thing Node
       $node = new stdClass();
       $node->type = 'thing';
       $node->title = $id;
