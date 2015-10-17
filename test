@@ -1,2 +1,7 @@
-curl -XPOST http://pparker:pass@127.0.0.1:8888/api/thing -d '{"id":"foo2", "sensor1":42, "sensor2": 99}'  -v
+
+while :
+do
+  curl -XPOST http://$1:$2@$3/api/thing -d '{"id":"foo", "sensor1":42, "sensor2": 99}'  -v
+  sleep 5
+done
 
